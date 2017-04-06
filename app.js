@@ -5,10 +5,6 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 // const favicon = require('serve-favicon');
 const mongoose = require('mongoose');
-const intrinio = require('intrinio-client')(
-  process.env.INTRINIO_USERNAME,
-  process.env.INTRINIO_PASSWORD
-);
 
 // Load Routes
 const stocksRouter = require('./routes/stocks');
@@ -41,11 +37,11 @@ app.use('/api/stocks', stocksRouter);
 /*
   Serve the Single Page App
 */
-app.use(express.static('public'));
-app.get('*', function(req, res) {
-  // Catches unknown adress and redirects to SPA
-  res.sendfile(__dirname + '/public/index.html');
-});
+// app.use(express.static('public'));
+// app.get('*', function(req, res) {
+//   // Catches unknown adress and redirects to SPA
+//   res.sendfile(__dirname + '/public/index.html');
+// });
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
