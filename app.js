@@ -4,14 +4,14 @@ const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 // const favicon = require('serve-favicon');
-const session = require('express-session');
-const passport = require('passport');
 const mongoose = require('mongoose');
-const MongoStore = require('connect-mongo')(session);
+const intrinio = require('intrinio-client')(
+  process.env.INTRINIO_USERNAME,
+  process.env.INTRINIO_PASSWORD
+);
 
 // Load Routes
-const authRouter = require('./routes/auth');
-const usersRouter = require('./routes/users');
+const stocksRouter = require('./routes/stocks');
 
 // Initialize Express App
 const app = express();
@@ -31,29 +31,19 @@ db.once('open', () => console.log('Connected to the Database'));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser(process.env.SESSION_SECRET));
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: true,
-    store: new MongoStore({ mongooseConnection: mongoose.connection })
-  })
-);
-app.use(passport.initialize());
-app.use(passport.session());
+app.use(cookieParser());
 
 /*
   User Routes
 */
-app.use('/auth', authRouter);
-app.use('/api/users', usersRouter);
+app.use('/api/stocks', stocksRouter);
 
 /*
   Serve the Single Page App
 */
 app.use(express.static('public'));
-app.get('*', function(req, res) { // Catches unknown adress and redirects to SPA
+app.get('*', function(req, res) {
+  // Catches unknown adress and redirects to SPA
   res.sendfile(__dirname + '/public/index.html');
 });
 
