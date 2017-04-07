@@ -14,7 +14,6 @@
     "debug": "~2.6.3",
     "dotenv": "^4.0.0",
     "express": "~4.15.2",
-    "intrinio-client": "0.0.5",
     "mongoose": "^4.9.3",
     "morgan": "~1.8.1",
     "serve-favicon": "~2.4.2",

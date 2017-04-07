@@ -72,10 +72,12 @@ class App extends Component {
   setDeletedStock(stockID) {
     let newData = this.state.stocks.slice();
     const indexOfStock = newData.findIndex(stock => stock.stockID === stockID);
-    newData.splice(indexOfStock, 1);
-    this.setState({
-      stocks: newData,
-    });
+    if (indexOfStock) {
+      newData.splice(indexOfStock, 1);
+      this.setState({
+        stocks: newData,
+      });
+    }
   }
 
   handleInputChange(e) {
