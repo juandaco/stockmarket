@@ -19,10 +19,8 @@ class App extends Component {
     super();
     this.state = {
       stocks: [],
-      stockInput: '',
     };
     // Function bindings
-    this.handleInputChange = this.handleInputChange.bind(this);
     this.handleInputKeyDown = this.handleInputKeyDown.bind(this);
     this.setAllStocks = this.setAllStocks.bind(this);
     this.setNewStock = this.setNewStock.bind(this);
@@ -91,13 +89,6 @@ class App extends Component {
     });
   }
 
-  handleInputChange(e) {
-    e.preventDefault();
-    this.setState({
-      stockInput: e.target.value.toUpperCase(),
-    });
-  }
-
   handleInputKeyDown(e) {
     switch (e.keyCode) {
       case 13: // Enter
@@ -105,27 +96,23 @@ class App extends Component {
         e.target.blur();
         break;
       case 27: //Esc
-        this.setState({
-          stockInput: '',
-        });
+        this.stockInput.input.value = '';
         break;
       default:
     }
   }
 
   addNewStock() {
-    if (this.state.stockInput) {
-      this.setState({
-        stockInput: '',
-      });
+    if (this.stockInput.input.value) {
       const stockList = this.state.stocks.map(stock => stock.stockID);
-      if (!stockList.includes(this.state.stockInput)) {
+      if (!stockList.includes(this.stockInput.input.value)) {
         socket.send(
           JSON.stringify({
-            stockID: this.state.stockInput,
+            stockID: this.stockInput.input.value.toUpperCase(),
             request: 'ADD_STOCK',
           }),
         );
+        this.stockInput.input.value = '';
       } else {
         console.log('You already have that stock in the chart');
       }
@@ -172,11 +159,15 @@ class App extends Component {
           <div id="search-box">
             <TextField
               hintText="Add your Stock!!!"
-              value={this.state.stockInput}
-              onChange={this.handleInputChange}
+              ref={stockInput => this.stockInput = stockInput}
               onKeyDown={this.handleInputKeyDown}
+              inputStyle={{ textTransform: 'uppercase' }}
             />
-            <FlatButton label="Add" onTouchTap={this.addNewStock} style={{minWidth: 50}}/>
+            <FlatButton
+              label="Add"
+              onTouchTap={this.addNewStock}
+              style={{ minWidth: 50 }}
+            />
           </div>
         </div>
       </MuiThemeProvider>
