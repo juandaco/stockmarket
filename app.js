@@ -57,10 +57,8 @@ wss.on('connection', function(ws) {
   // On every openned connection send Stock Data
   Stocks.find({}, { _id: false }).lean().exec(function(err, stocks) {
     // 1. Get current stocks from Database
-
     // Format the Array returned from Mongo
     stocks = stocks.map(stock => stock.stockID);
-
     if (stocks.length) {
       yahooFinance.historical(
         {
@@ -113,81 +111,83 @@ wss.on('connection', function(ws) {
   ws.on('message', function(message) {
     const msg = JSON.parse(message);
     // Take action based on request
-    switch (msg.request) {
-      case 'ADD_STOCK':
-        // 1. Search for stock in the API
-        yahooFinance.historical(
-          {
-            symbol: msg.stockID,
-            from: startDate,
-            to: todayDate,
-            period: 'd',
-          },
-          function(err, historyResult) {
-            const exists = historyResult.length;
-            if (exists) {
-              // Add to the Database
-              let MyStock = new Stocks({
-                stockID: msg.stockID,
-              });
-              MyStock.save(function(err, resp) {
-                if (err) throw err;
-                let newMsg = {
+    if (msg.stockID) {
+      switch (msg.request) {
+        case 'ADD_STOCK':
+          // 1. Search for stock in the API
+          yahooFinance.historical(
+            {
+              symbol: msg.stockID,
+              from: startDate,
+              to: todayDate,
+              period: 'd',
+            },
+            function(err, historyResult) {
+              const exists = historyResult.length;
+              if (exists) {
+                // Add to the Database
+                let MyStock = new Stocks({
                   stockID: msg.stockID,
-                };
-                // Get Name
-                yahooFinance.snapshot(
-                  {
-                    symbol: msg.stockID,
-                    fields: ['n'],
-                  },
-                  function(err, snapshot) {
-                    // Format data
-                    newMsg.data = historyResult.map(day => {
-                      return {
-                        date: day.date.toISOString().slice(0, 10),
-                        price: day.close,
-                      };
-                    });
-                    newMsg.name = snapshot.name;
-                    // Send data
-                    ws.send(
-                      JSON.stringify({
-                        newStock: newMsg,
-                        dataInfo: 'SET_NEW_STOCK',
-                      })
-                    );
-                  }
+                });
+                MyStock.save(function(err, resp) {
+                  if (err) throw err;
+                  let newMsg = {
+                    stockID: msg.stockID,
+                  };
+                  // Get Name
+                  yahooFinance.snapshot(
+                    {
+                      symbol: msg.stockID,
+                      fields: ['n'],
+                    },
+                    function(err, snapshot) {
+                      // Format data
+                      newMsg.data = historyResult.map(day => {
+                        return {
+                          date: day.date.toISOString().slice(0, 10),
+                          price: day.close,
+                        };
+                      });
+                      newMsg.name = snapshot.name;
+                      // Send data
+                      ws.send(
+                        JSON.stringify({
+                          newStock: newMsg,
+                          dataInfo: 'SET_NEW_STOCK',
+                        })
+                      );
+                    }
+                  );
+                });
+              } else {
+                // Not found, send error message
+                ws.send(
+                  JSON.stringify({
+                    dataInfo: 'NOT_FOUND',
+                  })
                 );
-              });
-            } else {
-              // Not found, send error message
-              ws.send(
-                JSON.stringify({
-                  dataInfo: 'NOT_FOUND',
-                })
-              );
+              }
             }
-          }
-        );
-        break;
-      case 'REMOVE_STOCK':
-        // REMOVE STOCK
-        // Delete from the Database
-        Stocks.deleteOne({ stockID: msg.stockID }, function(err, log) {
-          if (err) throw err;
-          // Send successful message for syncing
-          ws.send(
-            JSON.stringify({
-              stockID: msg.stockID,
-              dataInfo: 'SET_DELETED_STOCK',
-            })
           );
-        });
-        break;
-      default:
-        console.log('Not a valid message');
-        break;
+          break;
+        case 'REMOVE_STOCK':
+          // REMOVE STOCK
+          // Delete from the Database
+          Stocks.deleteOne({ stockID: msg.stockID }, function(err, log) {
+            if (err) throw err;
+            // Send successful message for syncing
+            ws.send(
+              JSON.stringify({
+                stockID: msg.stockID,
+                dataInfo: 'SET_DELETED_STOCK',
+              })
+            );
+          });
+          break;
+        default:
+          console.log('Not a valid message');
+          break;
+      }
     }
   });
 });

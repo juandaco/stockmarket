@@ -1,4 +1,15 @@
 import React, { Component } from 'react';
+// Material-UI config
+import injectTapEventPlugin from 'react-tap-event-plugin';
+injectTapEventPlugin();
+import lightBaseTheme from 'material-ui/styles/baseThemes/lightBaseTheme';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import getMuiTheme from 'material-ui/styles/getMuiTheme';
+import { TextField, FlatButton, Chip } from 'material-ui';
+// Material-UI Icons
+
+// My Components
+import StockGraph from './components/StockGraph';
 
 // Create a new WebSocket.
 let socket = new WebSocket(`ws://${window.location.hostname}:4000`);
@@ -18,6 +29,8 @@ class App extends Component {
     this.setDeletedStock = this.setDeletedStock.bind(this);
     this.addNewStock = this.addNewStock.bind(this);
     this.removeStock = this.removeStock.bind(this);
+    this.notFoundMessage = this.notFoundMessage.bind(this);
+    this.setupStockCards = this.setupChips.bind(this);
   }
 
   componentDidMount() {
@@ -72,12 +85,10 @@ class App extends Component {
   setDeletedStock(stockID) {
     let newData = this.state.stocks.slice();
     const indexOfStock = newData.findIndex(stock => stock.stockID === stockID);
-    if (indexOfStock) {
-      newData.splice(indexOfStock, 1);
-      this.setState({
-        stocks: newData,
-      });
-    }
+    newData.splice(indexOfStock, 1);
+    this.setState({
+      stocks: newData,
+    });
   }
 
   handleInputChange(e) {
@@ -103,46 +114,72 @@ class App extends Component {
   }
 
   addNewStock() {
-    this.setState({
-      stockInput: '',
-    });
-    const stockList = this.state.stocks.map(stock => stock.stockID);
-    if (!stockList.includes(this.state.stockInput)) {
-      socket.send(
-        JSON.stringify({
-          stockID: this.state.stockInput,
-          request: 'ADD_STOCK',
-        }),
-      );
-    } else {
-      console.log('You already have that stock in the chart');
+    if (this.state.stockInput) {
+      this.setState({
+        stockInput: '',
+      });
+      const stockList = this.state.stocks.map(stock => stock.stockID);
+      if (!stockList.includes(this.state.stockInput)) {
+        socket.send(
+          JSON.stringify({
+            stockID: this.state.stockInput,
+            request: 'ADD_STOCK',
+          }),
+        );
+      } else {
+        console.log('You already have that stock in the chart');
+      }
     }
   }
 
-  removeStock() {
-    this.setState({
-      stockInput: '',
-    });
+  removeStock(stockID) {
     socket.send(
       JSON.stringify({
-        stockID: this.state.stockInput,
+        stockID,
         request: 'REMOVE_STOCK',
       }),
     );
   }
 
+  notFoundMessage() {
+    console.log('Stock not found');
+  }
+
+  setupChips() {
+    return this.state.stocks.map(stock => {
+      return (
+        <Chip
+          key={stock.stockID}
+          id={`${stock.stockID}-chip`}
+          className="stock-chip"
+          onRequestDelete={() => this.removeStock(stock.stockID)}
+        >
+          {`${stock.name} (${stock.stockID})`}
+        </Chip>
+      );
+    });
+  }
+
   render() {
+    const chips = this.setupChips();
     return (
-      <div className="App">
-        <input
-          type="text"
-          value={this.state.stockInput}
-          onChange={this.handleInputChange}
-          onKeyDown={this.handleInputKeyDown}
-        />
-        <button onClick={this.addNewStock}>Add</button>
-        <button onClick={this.removeStock}>Remove</button>
-      </div>
+      <MuiThemeProvider muiTheme={getMuiTheme(lightBaseTheme)}>
+        <div id="app-container">
+          <StockGraph stockData={this.state.stocks} />
+          <div id="chips-container">
+            {chips}
+          </div>
+          <div id="search-box">
+            <TextField
+              hintText="Add your Stock!!!"
+              value={this.state.stockInput}
+              onChange={this.handleInputChange}
+              onKeyDown={this.handleInputKeyDown}
+            />
+            <FlatButton label="Add" onTouchTap={this.addNewStock} style={{minWidth: 50}}/>
+          </div>
+        </div>
+      </MuiThemeProvider>
     );
   }
 }
