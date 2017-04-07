@@ -17,6 +17,25 @@ import {
   Legend,
 } from 'recharts';
 import randomColor from 'randomcolor';
+import moment from 'moment';
+
+const CustomizedAxisTick = ({ x, y, stroke, payload }) => {
+  // let formatedDate = moment(payload.value);
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text
+        x={0}
+        y={0}
+        dy={16}
+        textAnchor="end"
+        fill="#666"
+        transform="rotate(-35)"
+      >
+        {payload.value}
+      </text>
+    </g>
+  );
+};
 
 const SimpleLineChart = ({ stockData }) => {
   let formatedData = [];
@@ -24,7 +43,7 @@ const SimpleLineChart = ({ stockData }) => {
   if (stockData.length) {
     stockData[0].data.forEach((day, index) => {
       formatedData.push({
-        date: day.date,
+        date: moment(day.date).format('dddd, MMM D, YYYY'),
       });
     });
 
@@ -53,7 +72,12 @@ const SimpleLineChart = ({ stockData }) => {
       data={formatedData}
       margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
     >
-      <XAxis dataKey="date" />
+      <XAxis
+        dataKey="date"
+        height={60}
+        tickCount={12}
+        tick={<CustomizedAxisTick />}
+      />
       <YAxis />
       <CartesianGrid strokeDasharray="3 3" />
       <Tooltip />

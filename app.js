@@ -55,7 +55,7 @@ const wss = new WebSocket.Server({ server });
 
 wss.on('connection', function(ws) {
   // On every openned connection send Stock Data
-  Stocks.find({}, { _id: false }).lean().exec(function(err, stocks) {
+  Stocks.find({}, { _id: false, __v: false }).lean().exec(function(err, stocks) {
     // 1. Get current stocks from Database
     // Format the Array returned from Mongo
     stocks = stocks.map(stock => stock.stockID);
