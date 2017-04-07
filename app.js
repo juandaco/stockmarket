@@ -39,7 +39,7 @@ app.use(cookieParser());
 // });
 
 /*
-  API Setup
+  Intrinio API Setup
 */
 const intrinio = require('intrinio-client')(
   process.env.INTRINIO_USERNAME,
@@ -52,16 +52,20 @@ const startDate = date.toISOString().slice(0, 10);
 // The string is a hack to inlude a start_date
 const apiQuery = stockID => `${stockID}&start_date=${startDate}`;
 
+/*
+  WebSocket Setup
+*/
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 wss.on('connection', function(ws) {
-  // 1. Get current stocks from Database
+  // On every openned connection send Stock Data
   Stocks.find({}, { _id: false }).lean().exec(function(err, stocks) {
-    // 2. Intrinio API requests for each Stock
+    // 1. Get current stocks from Database
     let counter = 0;
     let allStocks = [];
     stocks.forEach(stock => {
+      // 2. Intrinio API requests for each Stock
       intrinio
         .prices(apiQuery(stock.stockID))
         .on('complete', function(data, response) {
@@ -74,8 +78,8 @@ wss.on('connection', function(ws) {
           });
           allStocks.push(stock);
           counter++;
-          // 3. Return when the all the API queries are completed
           if (counter === stocks.length) {
+            // 3. Return when the all the API queries are completed
             ws.send(
               JSON.stringify({
                 allStocks,
@@ -86,54 +90,69 @@ wss.on('connection', function(ws) {
         });
     });
   });
-
+  // Respond to received messages
   ws.on('message', function(message) {
     const msg = JSON.parse(message);
-    // ADD STOCK
-    if (msg.request === 'ADD_STOCK') {
-      // 1. Search for stock on Intrinio API
-      intrinio
-        .prices(apiQuery(msg.stockID))
-        .on('complete', function(data, res) {
-          const exists = data.data.length;
-          if (exists) { // Found on Intrinio
-            // Add to the Database
-            let Stock = new Stocks({
-              stockID: msg.stockID,
-            });
-            Stock.save(function(err, resp) {
-              if (err) throw err;
-              let newMsg = {
+    // Take action based on request
+    switch (msg.request) {
+      case 'ADD_STOCK':
+        // 1. Search for stock on Intrinio API
+        intrinio
+          .prices(apiQuery(msg.stockID))
+          .on('complete', function(data, res) {
+            const exists = data.data.length;
+            // Found on Intrinio
+            if (exists) {
+              // Add to the Database
+              let MyStock = new Stocks({
                 stockID: msg.stockID,
-              };
-              newMsg['data'] = data.data.map(day => {
-                return {
-                  date: day.date,
-                  price: day.close,
-                };
               });
-              // Send data
-              ws.send(JSON.stringify({
-                newStock: newMsg,
-                dataInfo: 'SET_NEW_STOCK',
-              }));
-            });
-          } else {
-            console.log('!exists');
-            // 2.b Doesn't exists
-            // Send Error message
-          }
+              MyStock.save(function(err, resp) {
+                if (err) throw err;
+                let newMsg = {
+                  stockID: msg.stockID,
+                };
+                newMsg['data'] = data.data.map(day => {
+                  return {
+                    date: day.date,
+                    price: day.close,
+                  };
+                });
+                // Send data
+                ws.send(
+                  JSON.stringify({
+                    newStock: newMsg,
+                    dataInfo: 'SET_NEW_STOCK',
+                  })
+                );
+              });
+            } else {
+              // Not found, send error message
+              ws.send(
+                JSON.stringify({
+                  dataInfo: 'NOT_FOUND',
+                })
+              );
+            }
+          });
+        break;
+      case 'REMOVE_STOCK':
+        // REMOVE STOCK
+        // Delete from the Database
+        Stocks.deleteOne({ stockID: msg.stockID }, function(err, log) {
+          if (err) throw err;
+          // Send successful message for syncing
+          ws.send(
+            JSON.stringify({
+              stockID: msg.stockID,
+              dataInfo: 'SET_DELETED_STOCK',
+            })
+          );
         });
-    } else if (msg.request === 'REMOVE_STOCK') {
-      // REMOVE STOCK
-      Stocks.deleteOne({ stockID: msg.stockID }, function(err, log) {
-        if (err) throw err;
-        ws.send(JSON.stringify({
-          stockID: msg.stockID,
-          dataInfo: 'SET_DELETED_STOCK'
-        }));
-      });
-
+        break;
+      default:
+        console.log('Not a valid message');
+        break;
     }
   });
 });
@@ -156,7 +175,7 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  res.send('error');
 });
 
 server.listen(4000, function listening() {

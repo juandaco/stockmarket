@@ -11,10 +11,11 @@ class App extends Component {
       stockInput: '',
     };
     // Function bindings
+    this.handleInputChange = this.handleInputChange.bind(this);
+    this.handleInputKeyDown = this.handleInputKeyDown.bind(this);
     this.setAllStocks = this.setAllStocks.bind(this);
     this.setNewStock = this.setNewStock.bind(this);
     this.setDeletedStock = this.setDeletedStock.bind(this);
-    this.handleInputChange = this.handleInputChange.bind(this);
     this.addNewStock = this.addNewStock.bind(this);
     this.removeStock = this.removeStock.bind(this);
   }
@@ -31,7 +32,6 @@ class App extends Component {
     // Handle messages sent by the server.
     socket.onmessage = e => {
       const message = JSON.parse(e.data);
-      console.log(message);
       switch (message.dataInfo) {
         case 'SET_ALL_STOCKS':
           this.setAllStocks(message.allStocks);
@@ -41,6 +41,9 @@ class App extends Component {
           break;
         case 'SET_DELETED_STOCK':
           this.setDeletedStock(message.stockID);
+          break;
+        case 'NOT_FOUND':
+          this.notFoundMessage();
           break;
         default:
           console.log('Not a valid message');
@@ -82,6 +85,21 @@ class App extends Component {
     });
   }
 
+  handleInputKeyDown(e) {
+    switch (e.keyCode) {
+      case 13: // Enter
+        this.addNewStock();
+        e.target.blur();
+        break;
+      case 27: //Esc
+        this.setState({
+          stockInput: '',
+        });
+        break;
+      default:
+    }
+  }
+
   addNewStock() {
     this.setState({
       stockInput: '',
@@ -118,6 +136,7 @@ class App extends Component {
           type="text"
           value={this.state.stockInput}
           onChange={this.handleInputChange}
+          onKeyDown={this.handleInputKeyDown}
         />
         <button onClick={this.addNewStock}>Add</button>
         <button onClick={this.removeStock}>Remove</button>

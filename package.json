@@ -18,7 +18,8 @@
     "mongoose": "^4.9.3",
     "morgan": "~1.8.1",
     "serve-favicon": "~2.4.2",
-    "ws": "^2.2.3"
+    "ws": "^2.2.3",
+    "yahoo-finance": "^0.2.16"
   },
   "devDependencies": {
     "concurrently": "^3.4.0"
