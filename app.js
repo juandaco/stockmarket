@@ -150,12 +150,16 @@ wss.on('connection', function(ws) {
                       });
                       newMsg.name = snapshot.name;
                       // Send data
-                      ws.send(
-                        JSON.stringify({
-                          newStock: newMsg,
-                          dataInfo: 'SET_NEW_STOCK',
-                        })
-                      );
+                      wss.clients.forEach(function each(client) {
+                        if (client.readyState === WebSocket.OPEN) {
+                          client.send(
+                            JSON.stringify({
+                              newStock: newMsg,
+                              dataInfo: 'SET_NEW_STOCK',
+                            })
+                          );
+                        }
+                      });
                     }
                   );
                 });
@@ -176,12 +180,16 @@ wss.on('connection', function(ws) {
           Stocks.deleteOne({ stockID: msg.stockID }, function(err, log) {
             if (err) throw err;
             // Send successful message for syncing
-            ws.send(
-              JSON.stringify({
-                stockID: msg.stockID,
-                dataInfo: 'SET_DELETED_STOCK',
-              })
-            );
+            wss.clients.forEach(function each(client) {
+              if (client.readyState === WebSocket.OPEN) {
+                client.send(
+                  JSON.stringify({
+                    stockID: msg.stockID,
+                    dataInfo: 'SET_DELETED_STOCK',
+                  })
+                );
+              }
+            });
           });
           break;
         default:

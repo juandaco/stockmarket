@@ -16,6 +16,7 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
+import randomColor from 'randomcolor';
 
 const SimpleLineChart = ({ stockData }) => {
   let formatedData = [];
@@ -33,9 +34,15 @@ const SimpleLineChart = ({ stockData }) => {
       });
     });
     lines = stockData.map(stock => {
-      return <Line key={stock.stockID} type="monotone" dataKey={stock.stockID} stroke="#8884d8" />;
-      // <Line type="monotone" dataKey="pv" stroke="#8884d8" activeDot={{r: 8}}/>
-      // <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
+      return (
+        <Line
+          key={stock.stockID}
+          type="monotone"
+          dataKey={stock.stockID}
+          dot={false}
+          stroke={randomColor({ luminosity: 'bright' })}
+        />
+      );
     });
   }
 
