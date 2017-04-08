@@ -1,0 +1,26 @@
+{
+  "name": "stockmarket",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "concurrently \"npm run server\" \"npm run client\" \"npm run scss-watch\"",
+    "client": "cd client && npm start",
+    "server": "nodemon app.js",
+    "scss-watch": "cd client/src && scss --watch index.scss:index.css"
+  },
+  "dependencies": {
+    "body-parser": "~1.17.1",
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.3",
+    "dotenv": "^4.0.0",
+    "express": "~4.15.2",
+    "mongoose": "^4.9.3",
+    "morgan": "~1.8.1",
+    "serve-favicon": "~2.4.2",
+    "ws": "^2.2.3",
+    "yahoo-finance": "^0.2.16"
+  },
+  "devDependencies": {
+    "concurrently": "^3.4.0"
+  }
+}

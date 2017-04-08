@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "concurrently \"npm run server\" \"npm run client\" \"npm run scss-watch\"",
+    "start": "node app.js",
+    "development": "concurrently \"npm run server\" \"npm run client\" \"npm run scss-watch\"",
     "client": "cd client && npm start",
     "server": "nodemon app.js",
     "scss-watch": "cd client/src && scss --watch index.scss:index.css"
