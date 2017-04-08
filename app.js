@@ -1,15 +1,14 @@
 require('dotenv').config();
+const path = require('path');
 const express = require('express');
 const http = require('http');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
-// const favicon = require('serve-favicon');
+const favicon = require('serve-favicon');
 const mongoose = require('mongoose');
 const WebSocket = require('ws');
 const yahooFinance = require('yahoo-finance');
-// const util = require('util');
-// console.log(util.inspect(snapshot, {showHidden: false, depth: 1}));
 
 // Initialize Express App
 const app = express();
@@ -26,7 +25,7 @@ const Stocks = require('./models/stocks');
 /*
   Configure Middleware
 */
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -36,10 +35,6 @@ app.use(cookieParser());
   Serve the Single Page App
 */
 app.use(express.static('public'));
-// app.get('*', function(req, res) {
-//   // Catches unknown adress and redirects to SPA
-//   res.sendfile(__dirname + '/public/index.html');
-// });
 
 // Date Getting and Formating for later queries
 let date = new Date();

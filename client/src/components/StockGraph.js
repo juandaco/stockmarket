@@ -1,10 +1,8 @@
 import React from 'react';
 import {
   Card,
-  // CardActions,
-  // CardHeader,
   CardMedia,
-  CardTitle, // CardText,
+  CardTitle, 
 } from 'material-ui/Card';
 import {
   LineChart,
