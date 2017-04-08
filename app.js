@@ -224,6 +224,7 @@ app.use(function(err, req, res, next) {
   res.send('error');
 });
 
-server.listen(4000, function listening() {
+const port = process.env.PORT || 4000;
+server.listen(port, function listening() {
   console.log('Listening on %d', server.address().port);
 });
