@@ -14,7 +14,7 @@ import rndMuiColor from './colorSetup';
 import StockGraph from './components/StockGraph';
 
 // Create a new WebSocket.
-let socket = new WebSocket(`ws://${window.location.hostname}:4000`);
+let socket = new WebSocket(`ws://${window.location.hostname}`);
 
 class App extends Component {
   constructor() {
