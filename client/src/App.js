@@ -6,7 +6,9 @@ import lightBaseTheme from 'material-ui/styles/baseThemes/lightBaseTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import { TextField, FlatButton, Chip } from 'material-ui';
-// Material-UI Icons
+
+// Colors
+import rndMuiColor from './colorSetup';
 
 // My Components
 import StockGraph from './components/StockGraph';
@@ -67,12 +69,17 @@ class App extends Component {
   }
 
   setAllStocks(allStocks) {
+    allStocks.forEach(stock => {
+      stock['color'] = rndMuiColor.getColor();
+      return stock;
+    });
     this.setState({
       stocks: allStocks,
     });
   }
 
   setNewStock(newStock) {
+    newStock['color'] = rndMuiColor.getColor();
     let newData = this.state.stocks.slice();
     newData.push(newStock);
     this.setState({
@@ -103,16 +110,17 @@ class App extends Component {
   }
 
   addNewStock() {
-    if (this.stockInput.input.value) {
+    const inputValue = this.stockInput.input.value.toUpperCase();
+    this.stockInput.input.value = '';
+    if (inputValue) {
       const stockList = this.state.stocks.map(stock => stock.stockID);
-      if (!stockList.includes(this.stockInput.input.value)) {
+      if (!stockList.includes()) {
         socket.send(
           JSON.stringify({
-            stockID: this.stockInput.input.value.toUpperCase(),
+            stockID: inputValue,
             request: 'ADD_STOCK',
           }),
         );
-        this.stockInput.input.value = '';
       } else {
         console.log('You already have that stock in the chart');
       }
@@ -139,6 +147,8 @@ class App extends Component {
           key={stock.stockID}
           id={`${stock.stockID}-chip`}
           className="stock-chip"
+          backgroundColor={stock.color}
+          style={{ color: 'white' }}
           onRequestDelete={() => this.removeStock(stock.stockID)}
         >
           {`${stock.name} (${stock.stockID})`}

@@ -4,8 +4,7 @@ import {
   // CardActions,
   // CardHeader,
   CardMedia,
-  // CardTitle,
-  CardText,
+  CardTitle, // CardText,
 } from 'material-ui/Card';
 import {
   LineChart,
@@ -16,11 +15,12 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
-import randomColor from 'randomcolor';
 import moment from 'moment';
 
 const CustomizedAxisTick = ({ x, y, stroke, payload }) => {
-  // let formatedDate = moment(payload.value);
+  let formatedDate = moment(payload.value, 'ddd, MMM, D, YYYY').format(
+    "MMM 'YY",
+  );
   return (
     <g transform={`translate(${x},${y})`}>
       <text
@@ -30,11 +30,20 @@ const CustomizedAxisTick = ({ x, y, stroke, payload }) => {
         textAnchor="end"
         fill="#666"
         transform="rotate(-35)"
+        style={{ fontSize: 14 }}
       >
-        {payload.value}
+        {formatedDate}
       </text>
     </g>
   );
+};
+
+const dateFormater = date => {
+  return moment(date, 'ddd, MMM, D, YYYY').format("MMM 'YY");
+};
+
+const percentFormat = number => {
+  return `$${number}`;
 };
 
 const SimpleLineChart = ({ stockData }) => {
@@ -43,13 +52,15 @@ const SimpleLineChart = ({ stockData }) => {
   if (stockData.length) {
     stockData[0].data.forEach((day, index) => {
       formatedData.push({
-        date: moment(day.date).format('dddd, MMM D, YYYY'),
+        date: moment(day.date).format('ddd, MMM D, YYYY'),
       });
     });
 
     stockData.forEach(stock => {
       formatedData.forEach((day, index) => {
-        formatedData[index][stock.stockID] = stock.data[index].price;
+        formatedData[index][stock.stockID] = Number(
+          stock.data[index].price.toFixed(2),
+        );
       });
     });
     lines = stockData.map(stock => {
@@ -59,7 +70,8 @@ const SimpleLineChart = ({ stockData }) => {
           type="monotone"
           dataKey={stock.stockID}
           dot={false}
-          stroke={randomColor({ luminosity: 'bright' })}
+          stroke={stock.color}
+          strokeWidth={2}
         />
       );
     });
@@ -67,18 +79,25 @@ const SimpleLineChart = ({ stockData }) => {
 
   return (
     <LineChart
-      width={600}
-      height={300}
+      width={850}
+      height={450}
       data={formatedData}
-      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+      margin={{ top: 5, right: 30, left: 50, bottom: 5 }}
     >
       <XAxis
         dataKey="date"
-        height={60}
-        tickCount={12}
+        height={75}
+        tickCount={11}
         tick={<CustomizedAxisTick />}
+        tickFormatter={dateFormater}
       />
-      <YAxis />
+      <YAxis
+        axisLine={false}
+        tickLine={false}
+        label="USD"
+        orientation="right"
+        tickFormatter={percentFormat}
+      />
       <CartesianGrid strokeDasharray="3 3" />
       <Tooltip />
       <Legend />
@@ -89,17 +108,19 @@ const SimpleLineChart = ({ stockData }) => {
 
 const StockGraph = ({ stockData }) => {
   return (
-    <div id="graph-container">
-      <Card>
-        <CardText>
-          <i className="fa fa-line-chart" aria-hidden="true" />
-          US Stock Market
-        </CardText>
-        <CardMedia>
-          <SimpleLineChart stockData={stockData} />
-        </CardMedia>
-      </Card>
-    </div>
+    <Card id="graph-container">
+      <CardTitle style={{ fontSize: 30 }}>
+        <i
+          className="fa fa-line-chart"
+          aria-hidden="true"
+          style={{ marginRight: 10 }}
+        />
+        US Stock Market
+      </CardTitle>
+      <CardMedia style={{ display: 'flex', justifyContent: 'center' }}>
+        <SimpleLineChart stockData={stockData} />
+      </CardMedia>
+    </Card>
   );
 };
 

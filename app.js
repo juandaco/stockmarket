@@ -8,7 +8,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const WebSocket = require('ws');
 const yahooFinance = require('yahoo-finance');
-const util = require('util');
+// const util = require('util');
 // console.log(util.inspect(snapshot, {showHidden: false, depth: 1}));
 
 // Initialize Express App
@@ -55,57 +55,60 @@ const wss = new WebSocket.Server({ server });
 
 wss.on('connection', function(ws) {
   // On every openned connection send Stock Data
-  Stocks.find({}, { _id: false, __v: false }).lean().exec(function(err, stocks) {
-    // 1. Get current stocks from Database
-    // Format the Array returned from Mongo
-    stocks = stocks.map(stock => stock.stockID);
-    if (stocks.length) {
-      yahooFinance.historical(
-        {
-          symbols: stocks,
-          from: startDate,
-          to: todayDate,
-          period: 'd',
-        },
-        function(err, historyResults) {
-          if (err) throw err;
-          yahooFinance.snapshot(
-            {
-              symbols: stocks,
-              fields: ['n'],
-            },
-            function(err, snapshots) {
-              // Formatting Data
-              let allStocks = Object.keys(historyResults).map(key => {
-                historyResults[key] = historyResults[key].map(item => {
+  Stocks.find({}, { _id: false, __v: false })
+    .lean()
+    .exec(function(err, stocks) {
+      // 1. Get current stocks from Database
+      // Format the Array returned from Mongo
+      stocks = stocks.map(stock => stock.stockID);
+      if (stocks.length) {
+        yahooFinance.historical(
+          {
+            symbols: stocks,
+            from: startDate,
+            to: todayDate,
+            period: 'd',
+          },
+          function(err, historyResults) {
+            if (err) throw err;
+            yahooFinance.snapshot(
+              {
+                symbols: stocks,
+                fields: ['n'],
+              },
+              function(err, snapshots) {
+                if (err) throw err;
+                // Formatting Data
+                let allStocks = Object.keys(historyResults).map(key => {
+                  historyResults[key] = historyResults[key].map(item => {
+                    return {
+                      date: item.date.toISOString().slice(0, 10),
+                      price: item.close,
+                    };
+                  });
                   return {
-                    date: item.date.toISOString().slice(0, 10),
-                    price: item.close,
+                    stockID: key,
+                    data: historyResults[key],
                   };
                 });
-                return {
-                  stockID: key,
-                  data: historyResults[key],
-                };
-              });
-              // Adding name from the Snapshots
-              allStocks = allStocks.map((stock, index) => {
-                stock.name = snapshots[index].name;
-                return stock;
-              });
-              // Send Data
-              ws.send(
-                JSON.stringify({
-                  allStocks,
-                  dataInfo: 'SET_ALL_STOCKS',
-                })
-              );
-            }
-          );
-        }
-      );
-    }
-  });
+                // Adding name from the Snapshots
+                allStocks = allStocks.map((stock, index) => {
+                  stock.name = snapshots[index].name;
+                  return stock;
+                });
+                // Send Data
+                ws.send(
+                  JSON.stringify({
+                    allStocks,
+                    dataInfo: 'SET_ALL_STOCKS',
+                  })
+                );
+              }
+            );
+          }
+        );
+      }
+    });
 
   // Respond to received messages
   ws.on('message', function(message) {

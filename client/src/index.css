@@ -5,9 +5,9 @@
   justify-content: flex-start; }
 
 #graph-container {
-  width: 50vw;
-  height: 300px;
-  margin-bottom: 50px; }
+  width: 900px;
+  height: 530px;
+  margin-top: 50px; }
 
 #chips-container {
   display: flex;
