@@ -9,7 +9,6 @@ const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const WebSocket = require('ws');
 const yahooFinance = require('yahoo-finance');
 
 /*
@@ -61,13 +60,12 @@ const startDate = date.toISOString().slice(0, 10);
 /*
   WebSocket Setup
 */
-const wss = new WebSocket.Server({ server });
-wss.on('connection', function(ws) {
-  // On every openned connection send Stock Data
+const io = require('socket.io')(server);
+io.on('connection', function(socket) {
   Stocks.find({}, { _id: false, __v: false })
     .lean()
+    // 1. Get current stocks from Database
     .exec(function(err, stocks) {
-      // 1. Get current stocks from Database
       // Format the Array returned from Mongo
       stocks = stocks.map(stock => stock.stockID);
       if (stocks.length) {
@@ -106,12 +104,7 @@ wss.on('connection', function(ws) {
                   return stock;
                 });
                 // Send Data
-                ws.send(
-                  JSON.stringify({
-                    allStocks,
-                    dataInfo: 'SET_ALL_STOCKS',
-                  })
-                );
+                socket.emit('SET_ALL_STOCKS', { allStocks });
               }
             );
           }
@@ -119,96 +112,80 @@ wss.on('connection', function(ws) {
       }
     });
 
-  // Respond to received messages
-  ws.on('message', function(message) {
-    const msg = JSON.parse(message);
-    // Take action based on request
-    if (msg.stockID) {
-      switch (msg.request) {
-        case 'ADD_STOCK':
-          // 1. Search for stock in the API
-          yahooFinance.historical(
-            {
-              symbol: msg.stockID,
-              from: startDate,
-              to: todayDate,
-              period: 'd',
-            },
-            function(err, historyResult) {
-              const exists = historyResult.length;
-              if (exists) {
-                // Add to the Database
-                let MyStock = new Stocks({
-                  stockID: msg.stockID,
-                });
-                MyStock.save(function(err, resp) {
-                  if (err) throw err;
-                  let newMsg = {
-                    stockID: msg.stockID,
-                  };
-                  // Get Name
-                  yahooFinance.snapshot(
-                    {
-                      symbol: msg.stockID,
-                      fields: ['n'],
-                    },
-                    function(err, snapshot) {
-                      // Format data
-                      newMsg.data = historyResult.map(day => {
-                        return {
-                          date: day.date.toISOString().slice(0, 10),
-                          price: day.close,
-                        };
-                      });
-                      newMsg.name = snapshot.name;
-                      // Send data
-                      wss.clients.forEach(function each(client) {
-                        if (client.readyState === WebSocket.OPEN) {
-                          client.send(
-                            JSON.stringify({
-                              newStock: newMsg,
-                              dataInfo: 'SET_NEW_STOCK',
-                            })
-                          );
-                        }
-                      });
-                    }
-                  );
-                });
-              } else {
-                // Not found, send error message
-                ws.send(
-                  JSON.stringify({
-                    dataInfo: 'NOT_FOUND',
-                  })
-                );
-              }
-            }
-          );
-          break;
-        case 'REMOVE_STOCK':
-          // REMOVE STOCK
-          // Delete from the Database
-          Stocks.deleteOne({ stockID: msg.stockID }, function(err, log) {
-            if (err) throw err;
-            // Send successful message for syncing
-            wss.clients.forEach(function each(client) {
-              if (client.readyState === WebSocket.OPEN) {
-                client.send(
-                  JSON.stringify({
-                    stockID: msg.stockID,
-                    dataInfo: 'SET_DELETED_STOCK',
-                  })
-                );
-              }
-            });
+  socket.on('ADD_STOCK', function(data) {
+    // 1. Search for stock in the API
+    yahooFinance.historical(
+      {
+        symbol: data.stockID,
+        from: startDate,
+        to: todayDate,
+        period: 'd',
+      },
+      function(err, historyResult) {
+        const exists = historyResult.length;
+        if (exists) {
+          // Add to the Database
+          let MyStock = new Stocks({
+            stockID: data.stockID,
           });
-          break;
-        default:
-          console.log('Not a valid message');
-          break;
+          MyStock.save(function(err, resp) {
+            if (err) throw err;
+            let newMsg = {
+              stockID: data.stockID,
+            };
+            // Get Name
+            yahooFinance.snapshot(
+              {
+                symbol: data.stockID,
+                fields: ['n'],
+              },
+              function(err, snapshot) {
+                // Format data
+                newMsg.data = historyResult.map(day => {
+                  return {
+                    date: day.date.toISOString().slice(0, 10),
+                    price: day.close,
+                  };
+                });
+                newMsg.name = snapshot.name;
+                // Send data
+                io.emit('SET_NEW_STOCK', {
+                  newStock: newMsg,
+                });
+              }
+            );
+          });
+        } else {
+          // Not found, send error message
+          // ws.send(
+          //   JSON.stringify({
+          //     dataInfo: 'NOT_FOUND',
+          //   })
+          // );
+        }
       }
-    }
+    );
+  });
+  socket.on('REMOVE_STOCK', function(data) {
+    // Delete from the Database
+    Stocks.deleteOne({ stockID: data.stockID }, function(err, log) {
+      if (err) throw err;
+      // Send successful message for syncing
+      io.emit('SET_DELETED_STOCK', {
+        stockID: data.stockID,
+        dataInfo: 'SET_DELETED_STOCK',
+      });
+      // wss.clients.forEach(function each(client) {
+      //   if (client.readyState === WebSocket.OPEN) {
+      //     client.send(
+      //       JSON.stringify({
+      //         stockID: data.stockID,
+      //         dataInfo: 'SET_DELETED_STOCK',
+      //       })
+      //     );
+      //   }
+      // });
+    });
   });
 });
 
@@ -232,7 +209,7 @@ app.use(function(err, req, res, next) {
   res.send('error');
 });
 
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 4000;
 server.listen(port, function listening() {
   console.log('Listening on %d', server.address().port);
 });

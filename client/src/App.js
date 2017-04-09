@@ -14,8 +14,8 @@ import rndMuiColor from './colorSetup';
 import StockGraph from './components/StockGraph';
 
 // Create a new WebSocket.
-const thePort = `wss://${location.hostname}${location.port ? ':' + location.port : ''}`;
-let socket = new WebSocket(thePort);
+import io from 'socket.io-client';
+const socket = io();
 
 class App extends Component {
   constructor() {
@@ -35,38 +35,18 @@ class App extends Component {
   }
 
   componentDidMount() {
-    // Handle any errors that occur.
-    socket.onerror = err => {
-      console.log('WebSocket Error: ' + err);
-    };
-    // Show a connected message when the WebSocket is opened.
-    socket.onopen = e => {
-      // socket.send('This is my message try');
-    };
-    // Handle messages sent by the server.
-    socket.onmessage = e => {
-      const message = JSON.parse(e.data);
-      switch (message.dataInfo) {
-        case 'SET_ALL_STOCKS':
-          this.setAllStocks(message.allStocks);
-          break;
-        case 'SET_NEW_STOCK':
-          this.setNewStock(message.newStock);
-          break;
-        case 'SET_DELETED_STOCK':
-          this.setDeletedStock(message.stockID);
-          break;
-        case 'NOT_FOUND':
-          this.notFoundMessage();
-          break;
-        default:
-          console.log('Not a valid message');
-      }
-    };
-    // Show a disconnected message when the WebSocket is closed.
-    socket.onclose = e => {
-      console.log('Disconnected from WebSocket.');
-    };
+    socket.on('SET_ALL_STOCKS', data => {
+      this.setAllStocks(data.allStocks);
+    });
+    socket.on('SET_NEW_STOCK', data => {
+      this.setNewStock(data.newStock);
+    });
+    socket.on('SET_DELETED_STOCK', data => {
+      this.setDeletedStock(data.stockID);
+    });
+    socket.on('NOT_FOUND', data => {
+      this.notFoundMessage();
+    });
   }
 
   setAllStocks(allStocks) {
@@ -116,12 +96,9 @@ class App extends Component {
     if (inputValue) {
       const stockList = this.state.stocks.map(stock => stock.stockID);
       if (!stockList.includes()) {
-        socket.send(
-          JSON.stringify({
-            stockID: inputValue,
-            request: 'ADD_STOCK',
-          }),
-        );
+        socket.emit('ADD_STOCK', {
+          stockID: inputValue,
+        });
       } else {
         console.log('You already have that stock in the chart');
       }
@@ -129,12 +106,7 @@ class App extends Component {
   }
 
   removeStock(stockID) {
-    socket.send(
-      JSON.stringify({
-        stockID,
-        request: 'REMOVE_STOCK',
-      }),
-    );
+    socket.emit('REMOVE_STOCK', { stockID });
   }
 
   notFoundMessage() {
