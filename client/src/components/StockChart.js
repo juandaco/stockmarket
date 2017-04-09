@@ -87,7 +87,6 @@ const StockChart = ({ stockData }) => {
       <YAxis
         axisLine={false}
         tickLine={false}
-        label="USD"
         orientation="right"
         tickFormatter={percentFormat}
       />
