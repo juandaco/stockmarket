@@ -12,23 +12,23 @@ const mongoose = require('mongoose');
 const WebSocket = require('ws');
 const yahooFinance = require('yahoo-finance');
 
-// Initialize Express App
+/*
+  Initialize Express App and Setup based on environment
+*/
 const app = express();
 let server;
 if (process.env.NODE_ENV === 'development') {
-  console.log('Started in Development');
   const sslOptions = {
     key: fs.readFileSync('key.pem'),
     cert: fs.readFileSync('cert.pem'),
   };
   server = https.createServer(sslOptions, app);
 } else if (process.env.NODE_ENV === 'production') {
-  console.log('Started in Production');
   server = http.createServer(app);
 }
 
 /*
-  Connect to the Database
+  Database Configuration
 */
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGO_URL);
@@ -45,25 +45,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 /*
-  Serve the Single Page App in PRODUCTION only
+  Serve the Single Page App in Production only
 */
 if (process.env.NODE_ENV === 'production') {
   app.use(favicon(path.join(__dirname, 'client/build', 'favicon.ico')));
   app.use(express.static('./client/build'));
 }
-
-/*
-  Redirect to HTTPS
-*/
-// app.all('*', function(req, res, next) {
-//   if (req.secure) {
-//     return next();
-//   }
-//   res.redirect(
-//     `https://${req.hostname}:${app.get('port_https')}${req.url}`
-//     // 'https://' + req.hostname + ':' + app.get('port_https') + req.url
-//   );
-// });
 
 // Date Getting and Formating for later queries
 let date = new Date();
@@ -240,7 +227,6 @@ app.use(function(err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
-
   // render the error page
   res.status(err.status || 500);
   res.send('error');
