@@ -14,7 +14,7 @@ import rndMuiColor from './colorSetup';
 import StockGraph from './components/StockGraph';
 
 // Create a new WebSocket.
-const thePort = `ws://${location.hostname}${location.port ? ':' + location.port : ''}`;
+const thePort = `wss://${location.hostname}${location.port ? ':' + location.port : ''}`;
 let socket = new WebSocket(thePort);
 
 class App extends Component {
