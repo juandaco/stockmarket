@@ -8,7 +8,7 @@
     "server": "nodemon app.js",
     "scss-watch": "cd client/src && scss --watch index.scss:index.css",
     "build": "cd client && npm run build",
-    "deploy": "git add . && git commit -m 'Heroku Deployment' && git push origin master && git push heroku master && heroku open"
+    "deploy": "npm run build && git add . && git commit -m 'Heroku Deployment' && git push origin master && git push heroku master && heroku open"
   },
   "dependencies": {
     "body-parser": "~1.17.1",
