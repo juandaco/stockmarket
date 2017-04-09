@@ -3,12 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "node app.js",
-    "build": "cd client && npm run build",
-    "develop": "concurrently \"npm run server\" \"npm run client\" \"npm run scss-watch\"",
+    "start": "concurrently \"npm run server\" \"npm run client\" \"npm run scss-watch\"",
     "client": "cd client && npm start",
     "server": "nodemon app.js",
-    "scss-watch": "cd client/src && scss --watch index.scss:index.css"
+    "scss-watch": "cd client/src && scss --watch index.scss:index.css",
+    "build": "cd client && npm run build"
   },
   "dependencies": {
     "body-parser": "~1.17.1",
