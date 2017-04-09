@@ -4,6 +4,7 @@ const express = require('express');
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
+const favicon = require('serve-favicon');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
@@ -14,15 +15,16 @@ const yahooFinance = require('yahoo-finance');
 // Initialize Express App
 const app = express();
 let server;
-if (process.env.NODE_ENV !== 'production') {
-  console.log('Started in Production');
+if (process.env.NODE_ENV === 'development') {
+  console.log('Started in Development');
   const sslOptions = {
     key: fs.readFileSync('key.pem'),
     cert: fs.readFileSync('cert.pem'),
   };
   server = https.createServer(sslOptions, app);
-} else {
-  console.log('Started in Development');
+} else if (process.env.NODE_ENV === 'production') {
+  console.log('Started in Production');
+  process.env.PWD = process.cwd();
   server = http.createServer(app);
 }
 
@@ -47,9 +49,8 @@ app.use(cookieParser());
   Serve the Single Page App in PRODUCTION only
 */
 if (process.env.NODE_ENV === 'production') {
-  // const favicon = require('serve-favicon');
-  // app.use(favicon(path.join(__dirname, 'client/build', 'favicon.ico')));
-  app.use(express.static('client/build'));
+  app.use(favicon(path.join(process.env.PWD, 'client/build', 'favicon.ico')));
+  app.use(express.static(path.join(process.env.PWD, 'client/build')));
 }
 
 /*
