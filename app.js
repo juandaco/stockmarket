@@ -51,7 +51,7 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static('./client/build'));
 }
 
-// Date Getting and Formating for later queries
+// Date Getting and Formating for API requests
 let date = new Date();
 const todayDate = date.toISOString().slice(0, 10);
 date.setFullYear(date.getFullYear() - 1);
