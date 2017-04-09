@@ -24,7 +24,6 @@ if (process.env.NODE_ENV === 'development') {
   server = https.createServer(sslOptions, app);
 } else if (process.env.NODE_ENV === 'production') {
   console.log('Started in Production');
-  process.env.PWD = process.cwd();
   server = http.createServer(app);
 }
 
@@ -49,8 +48,8 @@ app.use(cookieParser());
   Serve the Single Page App in PRODUCTION only
 */
 if (process.env.NODE_ENV === 'production') {
-  app.use(favicon(path.join(process.env.PWD, 'client/build', 'favicon.ico')));
-  app.use(express.static(path.join(process.env.PWD, 'client/build')));
+  app.use(favicon(path.join(__dirname, 'client/build', 'favicon.ico')));
+  app.use(express.static('./client/build'));
 }
 
 /*
