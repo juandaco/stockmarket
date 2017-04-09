@@ -1,10 +1,5 @@
 import React from 'react';
 import {
-  Card,
-  CardMedia,
-  CardTitle, 
-} from 'material-ui/Card';
-import {
   LineChart,
   Line,
   XAxis,
@@ -44,7 +39,7 @@ const percentFormat = number => {
   return `$${number}`;
 };
 
-const SimpleLineChart = ({ stockData }) => {
+const StockChart = ({ stockData }) => {
   let formatedData = [];
   let lines;
   if (stockData.length) {
@@ -80,7 +75,7 @@ const SimpleLineChart = ({ stockData }) => {
       width={850}
       height={450}
       data={formatedData}
-      margin={{ top: 5, right: 30, left: 50, bottom: 5 }}
+      margin={{ top: 25, right: 25, left: 60, bottom: 10 }}
     >
       <XAxis
         dataKey="date"
@@ -104,22 +99,4 @@ const SimpleLineChart = ({ stockData }) => {
   );
 };
 
-const StockGraph = ({ stockData }) => {
-  return (
-    <Card id="graph-container">
-      <CardTitle style={{ fontSize: 30 }}>
-        <i
-          className="fa fa-line-chart"
-          aria-hidden="true"
-          style={{ marginRight: 10 }}
-        />
-        US Stock Market
-      </CardTitle>
-      <CardMedia style={{ display: 'flex', justifyContent: 'center' }}>
-        <SimpleLineChart stockData={stockData} />
-      </CardMedia>
-    </Card>
-  );
-};
-
-export default StockGraph;
+export default StockChart;
