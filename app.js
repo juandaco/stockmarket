@@ -2,16 +2,27 @@ require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const http = require('http');
+const https = require('https');
+const fs = require('fs');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
-const favicon = require('serve-favicon');
 const mongoose = require('mongoose');
 const WebSocket = require('ws');
 const yahooFinance = require('yahoo-finance');
 
 // Initialize Express App
 const app = express();
+let server;
+if (process.env.NODE_ENV !== 'production') {
+  const sslOptions = {
+    key: fs.readFileSync('key.pem'),
+    cert: fs.readFileSync('cert.pem'),
+  };
+  server = https.createServer(sslOptions, app);
+} else {
+  server = http.createServer(app);
+}
 
 /*
   Connect to the Database
@@ -25,16 +36,32 @@ const Stocks = require('./models/stocks');
 /*
   Configure Middleware
 */
-app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 /*
-  Serve the Single Page App
+  Serve the Single Page App in PRODUCTION only
 */
-app.use(express.static('public'));
+if (process.env.NODE_ENV === 'production') {
+  const favicon = require('serve-favicon');
+  app.use(favicon(path.join(__dirname, 'client/build', 'favicon.ico')));
+  app.use(express.static('client/build'));
+}
+
+/*
+  Redirect to HTTPS
+*/
+// app.all('*', function(req, res, next) {
+//   if (req.secure) {
+//     return next();
+//   }
+//   res.redirect(
+//     `https://${req.hostname}:${app.get('port_https')}${req.url}`
+//     // 'https://' + req.hostname + ':' + app.get('port_https') + req.url
+//   );
+// });
 
 // Date Getting and Formating for later queries
 let date = new Date();
@@ -45,9 +72,7 @@ const startDate = date.toISOString().slice(0, 10);
 /*
   WebSocket Setup
 */
-const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
-
 wss.on('connection', function(ws) {
   // On every openned connection send Stock Data
   Stocks.find({}, { _id: false, __v: false })
@@ -219,7 +244,7 @@ app.use(function(err, req, res, next) {
   res.send('error');
 });
 
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 3001;
 server.listen(port, function listening() {
   console.log('Listening on %d', server.address().port);
 });
