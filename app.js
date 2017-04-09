@@ -157,11 +157,7 @@ io.on('connection', function(socket) {
           });
         } else {
           // Not found, send error message
-          // ws.send(
-          //   JSON.stringify({
-          //     dataInfo: 'NOT_FOUND',
-          //   })
-          // );
+          socket.emit('NOT_FOUND');
         }
       }
     );
@@ -175,16 +171,6 @@ io.on('connection', function(socket) {
         stockID: data.stockID,
         dataInfo: 'SET_DELETED_STOCK',
       });
-      // wss.clients.forEach(function each(client) {
-      //   if (client.readyState === WebSocket.OPEN) {
-      //     client.send(
-      //       JSON.stringify({
-      //         stockID: data.stockID,
-      //         dataInfo: 'SET_DELETED_STOCK',
-      //       })
-      //     );
-      //   }
-      // });
     });
   });
 });
