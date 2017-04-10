@@ -1,7 +1,13 @@
 import React, { Component } from 'react';
 // Redux Setup
 import { connect } from 'react-redux';
-import { addStock } from '../actions';
+import {
+  addStock,
+  removeStock,
+  setDialogText,
+  showDialog,
+  hideDialog,
+} from '../actions';
 // Material-UI config
 import injectTapEventPlugin from 'react-tap-event-plugin';
 injectTapEventPlugin();
@@ -38,7 +44,6 @@ class App extends Component {
     this.removeStock = this.removeStock.bind(this);
     this.notFoundMessage = this.notFoundMessage.bind(this);
     this.setupChips = this.setupChips.bind(this);
-    this.openDialog = this.openDialog.bind(this);
     this.closeDialog = this.closeDialog.bind(this);
   }
 
@@ -73,20 +78,14 @@ class App extends Component {
 
   setNewStock(newStock) {
     newStock['color'] = rndMuiColor.getColor();
-    let newData = this.props.stocks.slice();
-    newData.push(newStock);
-    this.setState({
-      stocks: newData,
-    });
+    this.props.dispatch(addStock(newStock));
   }
 
   setDeletedStock(stockID) {
-    let newData = this.props.stocks.slice();
-    const indexOfStock = newData.findIndex(stock => stock.stockID === stockID);
-    newData.splice(indexOfStock, 1);
-    this.setState({
-      stocks: newData,
-    });
+    const stockIndex = this.props.stocks.findIndex(
+      stock => stock.stockID === stockID,
+    );
+    this.props.dispatch(removeStock(stockIndex));
   }
 
   handleInputKeyDown(e) {
@@ -112,10 +111,8 @@ class App extends Component {
           stockID: inputValue,
         });
       } else {
-        this.setState({
-          dialogText: 'You already have that stock in the chart',
-        });
-        this.openDialog();
+        this.props.dispatch(setDialogText('You already have that stock!!!'));
+        this.props.dispatch(showDialog());
       }
     }
   }
@@ -125,22 +122,12 @@ class App extends Component {
   }
 
   notFoundMessage() {
-    this.setState({
-      dialogText: 'Stock not fond!!!',
-    });
-    this.openDialog();
-  }
-
-  openDialog() {
-    this.setState({
-      showDialog: true,
-    });
+    this.props.dispatch(setDialogText('Stock not found!!!'));
+    this.props.dispatch(showDialog());
   }
 
   closeDialog() {
-    this.setState({
-      showDialog: false,
-    });
+    this.props.dispatch(hideDialog());
   }
 
   setupChips() {

@@ -18,7 +18,7 @@ function stocks(state = [], action) {
 
 function dialogText(state = '', action) {
   if (action.type === 'SET_DIALOG_TEXT') {
-    return action.text;
+    return action.dialogText;
   } else {
     return state;
   }
@@ -36,7 +36,7 @@ function dialogShow(state = false, action) {
 function stockMarketApp(state = {}, action) {
   return {
     stocks: stocks(state.stocks, action),
-    text: dialogText(state.text, action),
+    dialogText: dialogText(state.dialogText, action),
     showDialog: dialogShow(state.showDialog, action),
   };
 }

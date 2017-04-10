@@ -11,9 +11,9 @@ export const removeStock = index => ({
   index,
 });
 
-export const setDialogText = text => ({
+export const setDialogText = dialogText => ({
   type: 'SET_DIALOG_TEXT',
-  text,
+  dialogText,
 });
 
 export const showDialog = () => ({ type: 'SHOW_DIALOG' });
