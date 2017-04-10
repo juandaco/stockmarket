@@ -7,12 +7,13 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
+  ResponsiveContainer,
 } from 'recharts';
 import moment from 'moment';
 
 const CustomizedAxisTick = ({ x, y, stroke, payload }) => {
   let formatedDate = moment(payload.value, 'ddd, MMM, D, YYYY').format(
-    "MMM 'YY",
+    `MMM 'YY`,
   );
   return (
     <g transform={`translate(${x},${y})`}>
@@ -32,7 +33,7 @@ const CustomizedAxisTick = ({ x, y, stroke, payload }) => {
 };
 
 const dateFormater = date => {
-  return moment(date, 'ddd, MMM, D, YYYY').format("MMM 'YY");
+  return moment(date, 'ddd, MMM, D, YYYY').format(`MMM 'YY`);
 };
 
 const percentFormat = number => {
@@ -71,30 +72,30 @@ const StockChart = ({ stockData }) => {
   }
 
   return (
-    <LineChart
-      width={850}
-      height={450}
-      data={formatedData}
-      margin={{ top: 25, right: 25, left: 60, bottom: 10 }}
-    >
-      <XAxis
-        dataKey="date"
-        height={75}
-        tickCount={11}
-        tick={<CustomizedAxisTick />}
-        tickFormatter={dateFormater}
-      />
-      <YAxis
-        axisLine={false}
-        tickLine={false}
-        orientation="right"
-        tickFormatter={percentFormat}
-      />
-      <CartesianGrid strokeDasharray="3 3" />
-      <Tooltip />
-      <Legend />
-      {lines}
-    </LineChart>
+    <ResponsiveContainer width="100%" minWidth={300} minHeight={450}>
+      <LineChart
+        data={formatedData}
+        margin={{ top: 5, right: 0, left: 20, bottom: 10 }}
+      >
+        <XAxis
+          dataKey="date"
+          height={75}
+          tickCount={11}
+          tick={<CustomizedAxisTick />}
+          tickFormatter={dateFormater}
+        />
+        <YAxis
+          axisLine={false}
+          tickLine={false}
+          orientation="right"
+          tickFormatter={percentFormat}
+        />
+        <CartesianGrid strokeDasharray="3 3" />
+        <Tooltip />
+        <Legend />
+        {lines}
+      </LineChart>
+    </ResponsiveContainer>
   );
 };
 

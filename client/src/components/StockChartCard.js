@@ -5,31 +5,19 @@ import StockChart from './StockChart';
 
 const StockChartCard = ({ stockData }) => {
   return (
-    <Card id="graph-container">
-      <CardTitle style={{ fontSize: 28 }}>
+    <Card id="main-card">
+      <CardTitle id="card-title">
         <i
+          id="stock-icon-title"
           className="fa fa-line-chart"
           aria-hidden="true"
-          style={{
-            marginRight: 10,
-            fontSize: 45,
-          }}
         />
         US Stock Market
       </CardTitle>
-      <CardMedia
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-        }}
-      >
+      <CardMedia id="card-media">
         {stockData.length
           ? <StockChart stockData={stockData} />
-          : <CircularProgress
-              size={60}
-              thickness={4}
-              innerStyle={{ marginTop: 150 }}
-            />}
+          : <CircularProgress size={60} thickness={4} />}
       </CardMedia>
     </Card>
   );

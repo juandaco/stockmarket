@@ -166,6 +166,7 @@ class App extends Component {
               hintText="Add your Stock!!!"
               ref={stockInput => this.stockInput = stockInput}
               onKeyDown={this.handleInputKeyDown}
+              style={{width: 200}}
               inputStyle={{ textTransform: 'uppercase' }}
             />
             <FlatButton
@@ -175,11 +176,8 @@ class App extends Component {
             />
           </div>
           <Dialog
-            actions={[
-              <div>
-                <FlatButton label="OK" onTouchTap={this.closeDialog} />
-              </div>,
-            ]}
+            id="dialog"
+            actions={[<FlatButton label="OK" onTouchTap={this.closeDialog} />]}
             modal={false}
             open={this.state.showDialog}
             onRequestClose={this.closeDialog}

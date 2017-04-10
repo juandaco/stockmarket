@@ -4,24 +4,47 @@
   align-items: center;
   justify-content: flex-start; }
 
-#graph-container {
-  width: 900px;
-  height: 530px;
+#main-card {
+  width: 80vw;
+  min-width: 300px;
+  max-width: 1150px;
+  height: 75vh;
+  min-height: 600px;
   margin-top: 20px; }
+
+#card-title {
+  font-size: 28px; }
+
+#stock-icon-title {
+  font-size: 45px;
+  margin-right: 10px; }
+
+#card-media,
+#card-media > div {
+  display: flex;
+  flex-direction: column;
+  width: 80vw;
+  min-width: 300px;
+  height: 65vh;
+  min-height: 500px;
+  text-align: center;
+  align-items: center;
+  justify-content: center; }
 
 #chips-container {
   display: flex;
   flex-direction: row;
-  width: 50vw;
-  margin-top: 30px;
+  width: 75vw;
+  margin-top: 20px;
+  margin-bottom: 0px;
   align-items: center;
   flex-wrap: wrap;
   justify-content: center; }
 
 .stock-chip {
-  margin: 2px 2px !important; }
+  margin: 4px 2px !important; }
 
 #search-box {
-  margin-top: 30px; }
+  margin-top: 6px; }
 
 /*# sourceMappingURL=index.css.map */

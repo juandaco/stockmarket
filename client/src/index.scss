@@ -1,3 +1,8 @@
+$card-width: 80vw;
+$min-card-width: 300px;
+$card-height: 75vh;
+$card-media-height: $card-height - 10;
+
 #app-container {
   display: flex;
   flex-direction: column;
@@ -6,18 +11,49 @@
   justify-content: flex-start;
 }
 
-#graph-container {
-  width: 900px;
-  height: 530px;
+#main-card {
+  width: $card-width;
+  min-width: $min-card-width;
+  max-width: 1150px;
+  height: $card-height;
+  min-height: 600px;
   margin-top: 20px;
+}
+
+
+#card-title {
+  font-size: 28px;
+}
+
+#stock-icon-title {
+  font-size: 45px;
+
+  margin-right: 10px;
+}
+
+#card-media,
+#card-media > div {
+  display: flex;
+  flex-direction: column;
+
+  width: $card-width;
+  min-width: $min-card-width;
+  height: $card-media-height;
+  min-height: 500px;
+
+  text-align: center;
+
+  align-items: center;
+  justify-content: center;
 }
 
 #chips-container {
   display: flex;
   flex-direction: row;
 
-  width: 50vw;
-  margin-top: 30px;
+  width: 75vw;
+  margin-top: 20px;
+  margin-bottom: 0px;
 
   align-items: center;
   flex-wrap: wrap;
@@ -26,9 +62,9 @@
 
 
 .stock-chip {
-  margin: 2px 2px !important;
+  margin: 4px 2px !important;
 }
 
 #search-box {
-  margin-top: 30px;
+  margin-top: 6px;
 }
