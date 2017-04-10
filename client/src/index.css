@@ -25,6 +25,7 @@
   flex-direction: column;
   width: 80vw;
   min-width: 300px;
+  max-width: 1150px;
   height: 65vh;
   min-height: 500px;
   text-align: center;
@@ -39,7 +40,8 @@
   margin-bottom: 0px;
   align-items: center;
   flex-wrap: wrap;
-  justify-content: center; }
+  justify-content: center;
+  flex-shrink: 0; }
 
 .stock-chip {
   margin: 4px 2px !important; }

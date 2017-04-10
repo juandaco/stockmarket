@@ -1,5 +1,6 @@
 $card-width: 80vw;
 $min-card-width: 300px;
+$max-card-width: 1150px;
 $card-height: 75vh;
 $card-media-height: $card-height - 10;
 
@@ -14,7 +15,7 @@ $card-media-height: $card-height - 10;
 #main-card {
   width: $card-width;
   min-width: $min-card-width;
-  max-width: 1150px;
+  max-width: $max-card-width; 
   height: $card-height;
   min-height: 600px;
   margin-top: 20px;
@@ -38,6 +39,7 @@ $card-media-height: $card-height - 10;
 
   width: $card-width;
   min-width: $min-card-width;
+  max-width: $max-card-width; 
   height: $card-media-height;
   min-height: 500px;
 
@@ -58,6 +60,7 @@ $card-media-height: $card-height - 10;
   align-items: center;
   flex-wrap: wrap;
   justify-content: center;
+  flex-shrink: 0; // Safari Overflow Fix
 }
 
 
