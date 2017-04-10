@@ -22,7 +22,7 @@ const StockChartCard = ({ stockData }) => {
         </a>
       </CardTitle>
       <CardMedia id="card-media">
-        {stockData.length
+        {stockData 
           ? <StockChart stockData={stockData} />
           : <CircularProgress size={60} thickness={4} />}
       </CardMedia>

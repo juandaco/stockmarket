@@ -1,4 +1,7 @@
 import React, { Component } from 'react';
+// Redux Setup
+import { connect } from 'react-redux';
+import { addStock } from '../actions';
 // Material-UI config
 import injectTapEventPlugin from 'react-tap-event-plugin';
 injectTapEventPlugin();
@@ -8,23 +11,24 @@ import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import { TextField, FlatButton, Chip, Dialog } from 'material-ui';
 
 // Colors
-import rndMuiColor from './colorSetup';
+import rndMuiColor from '../helpers/colorSetup';
 
 // My Components
-import StockChartCard from './components/StockChartCard';
+import StockChartCard from './StockChartCard';
 
 // Create a new WebSocket.
 import io from 'socket.io-client';
 const socket = io();
 
 class App extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = {
+      stocks: [],
       dialogText: '',
       showDialog: false,
-      stocks: [],
     };
+
     // Function bindings
     this.handleInputKeyDown = this.handleInputKeyDown.bind(this);
     this.setAllStocks = this.setAllStocks.bind(this);
@@ -56,16 +60,20 @@ class App extends Component {
   setAllStocks(allStocks) {
     allStocks.forEach(stock => {
       stock['color'] = rndMuiColor.getColor();
-      return stock;
-    });
-    this.setState({
-      stocks: allStocks,
+      this.props.dispatch(
+        addStock({
+          stockID: stock.stockID,
+          name: stock.name,
+          data: stock.data,
+          color: stock.color,
+        }),
+      );
     });
   }
 
   setNewStock(newStock) {
     newStock['color'] = rndMuiColor.getColor();
-    let newData = this.state.stocks.slice();
+    let newData = this.props.stocks.slice();
     newData.push(newStock);
     this.setState({
       stocks: newData,
@@ -73,7 +81,7 @@ class App extends Component {
   }
 
   setDeletedStock(stockID) {
-    let newData = this.state.stocks.slice();
+    let newData = this.props.stocks.slice();
     const indexOfStock = newData.findIndex(stock => stock.stockID === stockID);
     newData.splice(indexOfStock, 1);
     this.setState({
@@ -98,7 +106,7 @@ class App extends Component {
     const inputValue = this.stockInput.input.value.toUpperCase();
     this.stockInput.input.value = '';
     if (inputValue) {
-      const stockList = this.state.stocks.map(stock => stock.stockID);
+      const stockList = this.props.stocks.map(stock => stock.stockID);
       if (!stockList.includes(inputValue)) {
         socket.emit('ADD_STOCK', {
           stockID: inputValue,
@@ -136,7 +144,10 @@ class App extends Component {
   }
 
   setupChips() {
-    return this.state.stocks.map(stock => {
+    if (!this.props.stocks) {
+      return null;
+    }
+    return this.props.stocks.map(stock => {
       return (
         <Chip
           key={stock.stockID}
@@ -157,7 +168,7 @@ class App extends Component {
     return (
       <MuiThemeProvider muiTheme={getMuiTheme(lightBaseTheme)}>
         <div id="app-container">
-          <StockChartCard stockData={this.state.stocks} />
+          <StockChartCard stockData={this.props.stocks} />
           <div id="chips-container">
             {chips}
           </div>
@@ -166,7 +177,7 @@ class App extends Component {
               hintText="Add your Stock!!!"
               ref={stockInput => this.stockInput = stockInput}
               onKeyDown={this.handleInputKeyDown}
-              style={{width: 200}}
+              style={{ width: 200 }}
               inputStyle={{ textTransform: 'uppercase' }}
             />
             <FlatButton
@@ -179,15 +190,23 @@ class App extends Component {
             id="dialog"
             actions={[<FlatButton label="OK" onTouchTap={this.closeDialog} />]}
             modal={false}
-            open={this.state.showDialog}
+            open={this.props.showDialog || false}
             onRequestClose={this.closeDialog}
           >
-            {this.state.dialogText}
+            {this.props.dialogText}
           </Dialog>
         </div>
       </MuiThemeProvider>
     );
   }
 }
+
+const mapStateToProps = state => ({
+  stocks: state.stocks,
+  dialogText: state.dialogText,
+  showDialog: state.showDialog,
+});
+
+App = connect(mapStateToProps)(App);
 
 export default App;
