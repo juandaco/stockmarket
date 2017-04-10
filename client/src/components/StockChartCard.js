@@ -13,6 +13,13 @@ const StockChartCard = ({ stockData }) => {
           aria-hidden="true"
         />
         US Stock Market
+        <a
+          id="synt4rt-link"
+          href="https://www.freecodecamp.com/juandaco"
+          target="_blank"
+        >
+          by <span id="synt4rt-logo">Synt4rt</span>
+        </a>
       </CardTitle>
       <CardMedia id="card-media">
         {stockData.length

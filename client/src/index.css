@@ -15,6 +15,26 @@
 #card-title {
   font-size: 28px; }
 
+#synt4rt-link {
+  font-family: cursive;
+  font-size: 8px;
+  font-weight: bold;
+  float: right;
+  text-decoration: none;
+  color: inherit; }
+
+#synt4rt-logo {
+  font-family: 'Shadows Into Light', cursive;
+  font-size: 17px;
+  font-weight: bolder;
+  z-index: 2;
+  display: inline-block;
+  margin-right: -10px;
+  margin-top: -15px;
+  margin-bottom: 10px;
+  transform: rotate(-10deg);
+  text-shadow: rgba(0, 0, 0, 0.3) 1px 2px; }
+
 #stock-icon-title {
   font-size: 45px;
   margin-right: 10px; }
@@ -37,11 +57,11 @@
   flex-direction: row;
   width: 75vw;
   margin-top: 20px;
-  margin-bottom: 0px;
+  margin-bottom: 0;
   align-items: center;
+  flex-shrink: 0;
   flex-wrap: wrap;
-  justify-content: center;
-  flex-shrink: 0; }
+  justify-content: center; }
 
 .stock-chip {
   margin: 4px 2px !important; }
