@@ -4,6 +4,8 @@ import { Card, CardMedia, CardTitle } from 'material-ui/Card';
 import StockChart from './StockChart';
 
 const StockChartCard = ({ stockData }) => {
+  let showChart = false;
+  if (Array.isArray(stockData) && stockData.length > 0) showChart = true;
   return (
     <Card id="main-card">
       <CardTitle id="card-title">
@@ -22,7 +24,7 @@ const StockChartCard = ({ stockData }) => {
         </a>
       </CardTitle>
       <CardMedia id="card-media">
-        {stockData 
+        {showChart
           ? <StockChart stockData={stockData} />
           : <CircularProgress size={60} thickness={4} />}
       </CardMedia>

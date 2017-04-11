@@ -29,12 +29,7 @@ const socket = io();
 class App extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      stocks: [],
-      dialogText: '',
-      showDialog: false,
-    };
-
+    
     // Function bindings
     this.handleInputKeyDown = this.handleInputKeyDown.bind(this);
     this.setAllStocks = this.setAllStocks.bind(this);
