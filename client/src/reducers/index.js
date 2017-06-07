@@ -1,14 +1,17 @@
+import { combineReducers } from 'redux';
+
 function stocks(state = [], action) {
   switch (action.type) {
     case 'ADD_STOCK':
-      return state.concat([
+      return [
+        ...state,
         {
           stockID: action.stockID,
           data: action.data,
           color: action.color,
           name: action.name,
         },
-      ]);
+      ];
     case 'REMOVE_STOCK':
       return state.filter((stock, index) => index !== action.index);
     default:
@@ -24,7 +27,7 @@ function dialogText(state = '', action) {
   }
 }
 
-function dialogShow(state = false, action) {
+function showDialog(state = false, action) {
   if (action.type === 'SHOW_DIALOG') {
     return true;
   } else if (action.type === 'HIDE_DIALOG') {
@@ -33,12 +36,10 @@ function dialogShow(state = false, action) {
   return false;
 }
 
-function stockMarketApp(state = {}, action) {
-  return {
-    stocks: stocks(state.stocks, action),
-    dialogText: dialogText(state.dialogText, action),
-    showDialog: dialogShow(state.showDialog, action),
-  };
-}
+const stockMarketApp = combineReducers({
+  stocks,
+  dialogText,
+  showDialog,
+});
 
 export default stockMarketApp;

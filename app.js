@@ -62,55 +62,52 @@ const startDate = date.toISOString().slice(0, 10);
 */
 const io = require('socket.io')(server);
 io.on('connection', function(socket) {
+  let storeHistory = {};
   Stocks.find({}, { _id: false, __v: false })
     .lean()
-    // 1. Get current stocks from Database
-    .exec(function(err, stocks) {
-      // Format the Array returned from Mongo
-      stocks = stocks.map(stock => stock.stockID);
-      if (stocks.length) {
-        yahooFinance.historical(
-          {
-            symbols: stocks,
-            from: startDate,
-            to: todayDate,
-            period: 'd',
-          },
-          function(err, historyResults) {
-            if (err) throw err;
-            yahooFinance.snapshot(
-              {
-                symbols: stocks,
-                fields: ['n'],
-              },
-              function(err, snapshots) {
-                if (err) throw err;
-                // Formatting Data
-                let allStocks = Object.keys(historyResults).map(key => {
-                  historyResults[key] = historyResults[key].map(item => {
-                    return {
-                      date: item.date.toISOString().slice(0, 10),
-                      price: item.close,
-                    };
-                  });
-                  return {
-                    stockID: key,
-                    data: historyResults[key],
-                  };
-                });
-                // Adding name from the Snapshots
-                allStocks = allStocks.map((stock, index) => {
-                  stock.name = snapshots[index].name;
-                  return stock;
-                });
-                // Send Data
-                socket.emit('SET_ALL_STOCKS', { allStocks });
-              }
-            );
-          }
-        );
-      }
-    });
+    .exec()
+    .then(stocks =>
+      yahooFinance.historical({
+        symbols: stocks.map(stock => stock.stockID),
+        from: startDate,
+        to: todayDate,
+        period: 'd',
+      })
+    )
+    .then(historyResults => {
+      storeHistory = historyResults;
+      const stocks = Object.keys(historyResults);
+      const requests = stocks.map(stock =>
+        yahooFinance.quote({
+          symbol: stock,
+          modules: ['price'],
+        })
+      );
+      return global.Promise.all(requests);
+    })
+    .then(snapshots => {
+      // Formatting Data
+      let allStocks = Object.keys(storeHistory).map(key => {
+        storeHistory[key] = storeHistory[key].map(item => {
+          return {
+            date: item.date.toISOString().slice(0, 10),
+            price: item.close,
+          };
+        });
+        return {
+          stockID: key,
+          data: storeHistory[key],
+        };
+      });
+      // Adding name from the Snapshots
+      allStocks = allStocks.map((stock, index) => {
+        stock.name = snapshots[index].price.shortName;
+        return stock;
+      });
+      // Send Data
+      socket.emit('SET_ALL_STOCKS', { allStocks });
+    })
+    .catch(err => console.log(err));
 
   socket.on('ADD_STOCK', function(data) {
     // 1. Search for stock in the API
@@ -134,10 +131,10 @@ io.on('connection', function(socket) {
               stockID: data.stockID,
             };
             // Get Name
-            yahooFinance.snapshot(
+            yahooFinance.quote(
               {
                 symbol: data.stockID,
-                fields: ['n'],
+                modules: ['price'],
               },
               function(err, snapshot) {
                 // Format data
@@ -147,7 +144,7 @@ io.on('connection', function(socket) {
                     price: day.close,
                   };
                 });
-                newMsg.name = snapshot.name;
+                newMsg.name = snapshot.price.shortName;
                 // Send data
                 io.emit('SET_NEW_STOCK', {
                   newStock: newMsg,
