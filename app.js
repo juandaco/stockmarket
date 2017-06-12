@@ -96,7 +96,7 @@ io.on('connection', function(socket) {
         });
         return {
           stockID: key,
-          data: storeHistory[key],
+          data: storeHistory[key].reverse(),
         };
       });
       // Adding name from the Snapshots
